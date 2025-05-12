@@ -1,0 +1,28 @@
+{
+  "www.linkedin.com": {
+    "inclusionSelectors": ["main"],
+    "exclusionSelectors": [
+      "div[class*='nav']",
+      "div[class*='global']",
+      ".visually-hidden",
+      "footer",
+      "div[class*='load']",
+      "section.scaffold-layout-toolbar",
+      "code",
+      "aside",
+      "style",
+      "noscript",
+      "iframe",
+      "header",
+      "header nav",
+      ".advertisement",
+      ".cookie-banner",
+      ".ad-banner-container",
+      ".pv-right-rail__empty-iframe",
+      ".artdeco-toast-item",
+      ".msg-overlay-list-bubble",
+      ".msg-overlay-conversation-bubble",
+      ".global-nav"
+    ]
+  }
+}

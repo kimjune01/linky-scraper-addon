@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      dom-to-semantic-markdown:
+        specifier: ^1.3.0
+        version: 1.3.0
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -2603,6 +2606,9 @@ packages:
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
+
+  dom-to-semantic-markdown@1.3.0:
+    resolution: {integrity: sha512-E2ASavhUpRM26YIfBE2t5EhATOCb2lU74Rn5CVjOscQtX42vSGuDRZe4scc7u9TAjsUqqq8QecbY55rVPPAi6g==}
 
   domain-browser@4.22.0:
     resolution: {integrity: sha512-IGBwjF7tNk3cwypFNH/7bfzBcgSCbaMOD3GsaY1AU/JRrnHnYgEM0+9kQt52iZxjNsjBtJYtao146V+f8jFZNw==}
@@ -5590,7 +5596,7 @@ snapshots:
   '@eslint/config-array@0.19.1':
     dependencies:
       '@eslint/object-schema': 2.1.5
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -5606,7 +5612,7 @@ snapshots:
   '@eslint/eslintrc@3.2.0':
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       espree: 10.3.0
       globals: 14.0.0
       ignore: 5.3.2
@@ -6278,7 +6284,7 @@ snapshots:
       '@typescript-eslint/types': 8.22.0
       '@typescript-eslint/typescript-estree': 8.22.0(typescript@5.8.1-rc)
       '@typescript-eslint/visitor-keys': 8.22.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       eslint: 9.20.1(jiti@1.21.6)
       typescript: 5.8.1-rc
     transitivePeerDependencies:
@@ -6298,7 +6304,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 8.22.0(typescript@5.8.1-rc)
       '@typescript-eslint/utils': 8.22.0(eslint@9.20.1(jiti@1.21.6))(typescript@5.8.1-rc)
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       eslint: 9.20.1(jiti@1.21.6)
       ts-api-utils: 2.0.0(typescript@5.8.1-rc)
       typescript: 5.8.1-rc
@@ -6313,7 +6319,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.22.0
       '@typescript-eslint/visitor-keys': 8.22.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -7345,10 +7351,6 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  debug@4.3.7:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.3.7(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
@@ -7428,6 +7430,8 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
       entities: 4.5.0
+
+  dom-to-semantic-markdown@1.3.0: {}
 
   domain-browser@4.22.0: {}
 
@@ -7838,7 +7842,7 @@ snapshots:
   eslint-import-resolver-typescript@3.7.0(eslint-plugin-import-x@4.6.1(eslint@9.20.1(jiti@1.21.6))(typescript@5.8.1-rc))(eslint-plugin-import@2.29.1)(eslint@9.20.1(jiti@1.21.6)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       enhanced-resolve: 5.17.1
       eslint: 9.20.1(jiti@1.21.6)
       fast-glob: 3.3.3
@@ -7868,7 +7872,7 @@ snapshots:
       '@types/doctrine': 0.0.9
       '@typescript-eslint/scope-manager': 8.20.0
       '@typescript-eslint/utils': 8.22.0(eslint@9.20.1(jiti@1.21.6))(typescript@5.8.1-rc)
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       doctrine: 3.0.0
       enhanced-resolve: 5.17.1
       eslint: 9.20.1(jiti@1.21.6)
@@ -8002,7 +8006,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       escape-string-regexp: 4.0.0
       eslint-scope: 8.2.0
       eslint-visitor-keys: 4.2.0
@@ -8961,7 +8965,7 @@ snapshots:
     dependencies:
       chalk: 5.3.0
       commander: 12.1.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@8.1.1)
       execa: 8.0.1
       lilconfig: 3.1.2
       listr2: 8.2.4
