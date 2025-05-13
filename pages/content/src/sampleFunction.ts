@@ -9,18 +9,33 @@ function debounce<T extends (...args: unknown[]) => void>(fn: T, delay: number):
   } as T;
 }
 
+function extractLinkedInUsername(url: string): string | null {
+  const match = url.match(/linkedin\.com\/in\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
 export function sampleFunction() {
+  console.log('sampleFunction');
   const domain = window.location.hostname;
   if (domain !== 'www.linkedin.com') {
     return;
   }
-  const extractor = new ConfigurableExtractor(domain, true);
+  const extractor = new ConfigurableExtractor(domain);
 
   // Extraction logic
-  let latestMarkdown = '';
   const extractAndLog = () => {
+    console.log('Extracting content');
     const markdown = extractor.extractContent(document.body.innerHTML);
-    latestMarkdown = markdown;
+    const profile = extractLinkedInUsername(window.location.href);
+    // Send a message to the background script to handle native messaging
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage({
+        action: 'sendNativeMarkdown',
+        content: markdown,
+        profile: profile,
+        filename: (profile ? profile : 'profile') + '.md',
+      });
+    }
   };
 
   // Debounced version to avoid excessive calls
@@ -39,40 +54,5 @@ export function sampleFunction() {
     characterData: true,
   });
 
-  // Add a button to trigger download
-  function addDownloadButton() {
-    if (document.getElementById('extractor-download-btn')) return;
-    const btn = document.createElement('button');
-    btn.id = 'extractor-download-btn';
-    btn.textContent = 'Download Extracted Markdown';
-    btn.style.position = 'fixed';
-    btn.style.bottom = '20px';
-    btn.style.right = '20px';
-    btn.style.zIndex = '99999';
-    btn.style.padding = '8px 16px';
-    btn.style.background = '#2563eb';
-    btn.style.color = 'white';
-    btn.style.border = 'none';
-    btn.style.borderRadius = '4px';
-    btn.style.cursor = 'pointer';
-    btn.onclick = () => {
-      const blob = new Blob([latestMarkdown], { type: 'text/markdown' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'extracted-content.md';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 0);
-    };
-    document.body.appendChild(btn);
-  }
-
-  addDownloadButton();
-
-  // Optional: return a cleanup function if used in a context that needs it
-  // return () => observer.disconnect();
+  // Remove the download button logic and related code
 }

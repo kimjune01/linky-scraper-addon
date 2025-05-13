@@ -116,10 +116,43 @@ export class HtmlProcessor {
       .replace(/<-[a-z][a-z0-9-]*->[\s\n]*(?:Loading)?[\s\n]*<\/-[a-z][a-z0-9-]*->/gi, '');
 
     // Remove lines that only contain whitespace and trim leading whitespace
-    return processed
-      .split('\n')
-      .filter(line => line.trim().length > 0)
-      .map(line => line.trimStart())
-      .join('\n');
+    return (
+      processed
+        .split('\n')
+        .map(line => {
+          const trimmed = line.trimStart();
+          // Remove 'logo' and all preceding characters on that line (case-insensitive)
+          if (/logo/i.test(trimmed)) {
+            return trimmed.replace(/^.*logo/i, '');
+          }
+          return trimmed;
+        })
+        .filter(line => {
+          // Replace with newline if line ends with 'logo' (case-insensitive, ignoring trailing whitespace)
+          if (/logo\s*$/i.test(line)) return '';
+          // Replace with newline if line is only dashes (at least 2 dashes, possibly with spaces)
+          if (/^[-\s]{2,}$/.test(line)) return '';
+          // Replace with newline if line is a single word: subscribe, join, follow, or '-'
+          if (/^(subscribe|join|follow|connections|connect|-)$/i.test(line)) return '';
+          // Filter out lines that start with 'like' (case-insensitive, possibly with leading whitespace)
+          if (/^like/i.test(line)) return '';
+          // Filter out lines that end with the word 'followers' (case-insensitive, possibly with trailing whitespace)
+          if (/followers\s*$/i.test(line)) return '';
+          // Filter out lines that end with the word 'members' (case-insensitive, possibly with trailing whitespace)
+          if (/members\s*$/i.test(line)) return '';
+          return line.length > 0 ? line.trimStart() : '';
+        })
+        .join('\n')
+        // Remove a newline that immediately follows a line ending with a dash
+        .replace(/-\n\n/g, '-\n')
+        // Double every newline
+        .replace(/\n/g, '\n\n')
+        // Remove leading whitespaces from every line
+        .replace(/^ +/gm, '')
+        // Remove a newline that immediately follows a line ending with a dash (again, in case doubling reintroduced it)
+        .replace(/-\s*\n{2,}/g, '-\n')
+        // Join lines where a line ends with a dash and the next line is non-empty
+        .replace(/-\s*\n+(\S)/g, '-$1')
+    );
   }
 }

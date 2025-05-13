@@ -8,7 +8,7 @@ exampleThemeStorage.get().then(theme => {
 console.log('Background loaded');
 console.log("Edit 'chrome-extension/src/background/index.ts' and save to reload.");
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(message => {
   if (message.action === 'saveToDownloads') {
     const url = URL.createObjectURL(new Blob([message.content], { type: 'text/markdown' }));
     chrome.downloads.download({
@@ -17,5 +17,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       saveAs: false,
       conflictAction: 'uniquify',
     });
+  }
+  if (message.action === 'sendNativeMarkdown') {
+    console.log('Sending native message');
+    chrome.runtime.sendNativeMessage(
+      'com.linky.link', // Native messaging host name
+      { type: 'markdown', content: message.content, profile: message.profile },
+      response => {
+        if (chrome.runtime.lastError) {
+          console.error('Native message error:', chrome.runtime.lastError.message);
+        } else {
+          console.log('Native message response:', response);
+        }
+      },
+    );
   }
 });

@@ -1,0 +1,7 @@
+{
+  "name": "com.linky.link",
+  "description": "Linky link scraper",
+  "path": "/Users/junekim/Documents/chrome-extension-boilerplate-react-vite/chrome-extension/host/native-host.py",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://jmfenlienpocfphpkeccphjfdoepioee/"]
+}
