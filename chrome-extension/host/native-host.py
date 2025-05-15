@@ -2,6 +2,7 @@
 import sys
 import struct
 import json
+import os
 
 
 def read_message():
@@ -14,16 +15,39 @@ def read_message():
     message = sys.stdin.buffer.read(message_length).decode("utf-8")
     unwrapped = json.loads(message)
     type = unwrapped.get("type")
-    if type == "markdown":
+    if type == "profile":
         content = unwrapped.get("content")
         profile = unwrapped.get("profile")
         if profile and content:
-            filename = f"{profile}.md"
+            filename = os.path.expanduser(f"~/Desktop/temp/{profile}.md")
+            try:
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.write(content)
+                return {"message": {"saved": True, "filename": filename}}
+            except Exception as e:
+                return {"message": f"Error writing file: {e}"}
+        else:
+            return {"message": "Missing profile or content"}
+    elif type == "search":
+        content = unwrapped.get("content")
+        if not content:
+            return {"message": "Missing content"}
+        # if content is a list, format it as a string with newlines
+        if isinstance(content, list):
+            content = "\n".join(content)
+        filename = unwrapped.get("filename")
+        # Ensure filename is in ~/Desktop/temp
+        if filename:
+            if not os.path.isabs(filename):
+                filename = os.path.expanduser(os.path.join("~/Desktop/temp", filename))
+            else:
+                filename = os.path.expanduser(filename)
+        try:
             with open(filename, "w", encoding="utf-8") as f:
                 f.write(content)
             return {"message": {"saved": True, "filename": filename}}
-        else:
-            return {"error": "Missing profile or content"}
+        except Exception as e:
+            return {"message": f"Error writing file: {e}"}
     else:
         return {"error": "Invalid type"}
 

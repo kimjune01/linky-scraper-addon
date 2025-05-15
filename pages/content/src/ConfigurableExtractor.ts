@@ -108,7 +108,7 @@ export class ConfigurableExtractor {
    * @param html The HTML content to extract from
    * @returns Extracted content as a string
    */
-  extractContent(html: string): string {
+  extractProfileContent(html: string): string {
     // Create a temporary DOM element to parse the HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
@@ -148,6 +148,58 @@ export class ConfigurableExtractor {
 
     // Process the markdown for better readability
     return HtmlProcessor.processMarkdown(markdown);
+  }
+
+  extractSearchContent(html: string): string[] {
+    // Create a temporary DOM element to parse the HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    let elementsToProcess: HTMLElement[] = [];
+    if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
+      // Only process elements matching inclusion selectors
+      this.inclusionSelectors.forEach(selector => {
+        tempDiv.querySelectorAll(selector).forEach(el => {
+          elementsToProcess.push(el as HTMLElement);
+        });
+      });
+    } else {
+      // No inclusion selectors: process the whole document
+      elementsToProcess = [tempDiv];
+    }
+
+    // For each included element, remove excluded elements inside it
+    elementsToProcess.forEach(element => {
+      this.debugHighlightExcludedElements(element);
+      this.debugHighlightIncludedElements(element);
+      this.exclusionSelectors.forEach(selector => {
+        const elements = element.querySelectorAll(selector);
+        elements.forEach(el => {
+          el.remove();
+        });
+      });
+    });
+
+    // Extract anchor tags that contain /in/ and return the list of extracted handles
+    const anchorHandles: string[] = [];
+    const anchors = tempDiv.querySelectorAll('a[href*="/in/"]');
+    anchors.forEach(anchor => {
+      const href = anchor.getAttribute('href');
+      if (href && href.includes('miniProfileUrn')) {
+        const match = href.match(/\/in\/([^/?#]+)/i);
+        if (match && match[1]) {
+          const handle = match[1];
+          // Only add if it does NOT start with "ACoA"
+          if (!/^ACoA/i.test(handle)) {
+            anchorHandles.push(handle);
+          }
+        }
+      }
+    });
+    const uniqueHandles = Array.from(new Set(anchorHandles));
+    console.log('uniqueHandles', uniqueHandles);
+    // Deduplicate for unique results only
+    return uniqueHandles;
   }
 
   static isConfigured(host: string): boolean {

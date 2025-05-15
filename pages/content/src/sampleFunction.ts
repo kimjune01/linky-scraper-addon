@@ -25,16 +25,37 @@ export function sampleFunction() {
   // Extraction logic
   const extractAndLog = () => {
     console.log('Extracting content');
-    const markdown = extractor.extractContent(document.body.innerHTML);
     const profile = extractLinkedInUsername(window.location.href);
-    // Send a message to the background script to handle native messaging
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-      chrome.runtime.sendMessage({
-        action: 'sendNativeMarkdown',
-        content: markdown,
-        profile: profile,
-        filename: (profile ? profile : 'profile') + '.md',
-      });
+    if (profile) {
+      const markdown = extractor.extractProfileContent(document.body.innerHTML);
+      // Send a message to the background script to handle native messaging
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          action: 'sendNativeMarkdown',
+          type: 'profile',
+          content: markdown,
+          profile: profile,
+          filename: (profile ? profile : 'profile') + '.md',
+        });
+      }
+    }
+    const isSearchPage = window.location.pathname.includes('/search/results/');
+    if (isSearchPage) {
+      const handles = extractor.extractSearchContent(document.body.innerHTML);
+      // Extract 'keywords' param from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const keywords = urlParams.get('keywords');
+      const page = urlParams.get('page') || 1;
+      const filename = keywords ? encodeURIComponent(keywords) + '_page' + page + '.txt' : 'search.txt';
+      // Send a message to the background script to handle native messaging
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          action: 'sendNativeMarkdown',
+          type: 'search',
+          content: handles,
+          filename: filename,
+        });
+      }
     }
   };
 
