@@ -3,6 +3,8 @@ import sys
 import struct
 import json
 import os
+from determine_collection_name import determine_collection_name
+# import chromadb  # Uncomment and configure as needed for ChromaDB usage
 
 
 def write_content_to_file(filename, content):
@@ -36,16 +38,27 @@ def read_message():
 
     content = unwrapped.get("content")
     url = unwrapped.get("url")
-    filename = make_filename(url)
-    return {"message": {"saved": False, "url": url, "filename": filename}}
 
-    if not filename:
-        return {"message": "Missing filename"}
-    try:
-        filename = write_content_to_file(filename, content)
-        return {"message": {"saved": True, "filename": filename}}
-    except Exception as e:
-        return {"message": f"Error writing file: {e}"}
+    # Save to directory
+    filename = make_filename(url)
+    filename = write_content_to_file(filename, content)
+
+    # Save to ChromaDB
+    collection_name = determine_collection_name(url)
+    # collection = chromadb.get_or_create_collection(collection_name)
+    # collection.add(
+    #     documents=[content],
+    #     metadatas=[{"url": url}],
+    #     ids=[url],
+    # )
+
+    return {
+        "message": {
+            "saved": True,
+            "filename": filename,
+            "collection_name": collection_name,
+        }
+    }
 
 
 def make_filename(url: str) -> str:
