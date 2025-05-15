@@ -86,21 +86,43 @@ export class ConfigurableExtractor {
     console.log('[ConfigurableContentExtractor] Inclusion selectors:', this.inclusionSelectors);
   }
 
-  /**
-   * Debug function to log the presence of specific tags in the HTML string
-   */
-  private debugLogTagPresence(html: string, context: string): void {
-    if (!this.debugMode) return;
-    const tagsToCheck = ['img', 'a'];
-    tagsToCheck.forEach(tag => {
-      const regex = new RegExp(`<${tag}(\s|>)`, 'gi');
-      const count = (html.match(regex) || []).length;
-      if (count > 0) {
-        console.log(`[DEBUG][${context}] Found <${tag}> tags:`, count);
-      } else {
-        console.log(`[DEBUG][${context}] No <${tag}> tags found.`);
-      }
+  extractContent(html: string): string {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    let elementsToProcess: HTMLElement[] = [];
+    if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
+      // Only process elements matching inclusion selectors
+      this.inclusionSelectors.forEach(selector => {
+        tempDiv.querySelectorAll(selector).forEach(el => {
+          elementsToProcess.push(el as HTMLElement);
+        });
+      });
+    } else {
+      // No inclusion selectors: process the whole document
+      elementsToProcess = [tempDiv];
+    }
+
+    // For each included element, remove excluded elements inside it
+    elementsToProcess.forEach(element => {
+      this.exclusionSelectors.forEach(selector => {
+        const elements = element.querySelectorAll(selector);
+        elements.forEach(el => {
+          el.remove();
+        });
+      });
     });
+
+    // Gather the HTML from all included elements
+    let extractedContent = elementsToProcess.map(el => el.innerHTML).join('\n');
+    extractedContent = HtmlProcessor.removeImageTags(extractedContent);
+    extractedContent = HtmlProcessor.replaceAnchorTags(extractedContent);
+
+    // Convert to markdown
+    const markdown = convertHtmlToMarkdown(extractedContent);
+
+    // Process the markdown for better readability
+    return HtmlProcessor.processMarkdown(markdown);
   }
 
   /**

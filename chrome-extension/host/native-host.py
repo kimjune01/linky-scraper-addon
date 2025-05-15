@@ -14,6 +14,11 @@ def read_message():
     # Read the message data
     message = sys.stdin.buffer.read(message_length).decode("utf-8")
     unwrapped = json.loads(message)
+
+    try:
+        validate_outgoing_message(unwrapped)
+    except Exception as e:
+        return {"message": f"Validation error: {e}"}
     type = unwrapped.get("type")
     if type == "profile":
         content = unwrapped.get("content")
@@ -43,13 +48,32 @@ def read_message():
             else:
                 filename = os.path.expanduser(filename)
         try:
+            # Ensure the directory exists
+            dir_path = os.path.dirname(filename)
+            if dir_path:  # Only create if there is a directory part
+                os.makedirs(dir_path, exist_ok=True)
+            # Now you can safely open the file for writing
             with open(filename, "w", encoding="utf-8") as f:
                 f.write(content)
             return {"message": {"saved": True, "filename": filename}}
         except Exception as e:
             return {"message": f"Error writing file: {e}"}
+    elif type == "content":
+        content = unwrapped.get("content")
+        filename = unwrapped.get("filename")
+        if not filename:
+            return {"message": "Missing filename"}
+        if not os.path.isabs(filename):
+            filename = os.path.expanduser(os.path.join("~/Desktop/temp", filename))
+        # Ensure the directory exists
+        dir_path = os.path.dirname(filename)
+        if dir_path:  # Only create if there is a directory part
+            os.makedirs(dir_path, exist_ok=True)
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(content)
+        return {"message": {"saved": True, "filename": filename}}
     else:
-        return {"error": "Invalid type"}
+        return {"message": "Invalid type"}
 
 
 def send_message(message_content):
@@ -74,6 +98,34 @@ def main():
             print(f"Error processing message: {e}", file=sys.stderr)
             sys.stderr.flush()
             # Optionally, send an error response or just continue
+
+
+def validate_outgoing_message(data: dict) -> bool:
+    # Check required fields
+    required_fields = {"action", "filename", "type", "content"}
+    if not required_fields.issubset(data):
+        raise Exception("Missing required fields")
+
+    # Check action is exactly 'sendNativeMarkdown'
+    if data["action"] != "sendNativeMarkdown":
+        raise Exception("Invalid action")
+
+    # Check filename and content are strings
+    if not isinstance(data["filename"], str) or not isinstance(data["content"], str):
+        raise Exception("Invalid filename or content")
+
+    # Check type is one of the allowed values
+    if data["type"] not in {"profile", "search", "content"}:
+        raise Exception("Invalid type")
+
+    return True
+
+
+# Example usage:
+# try:
+#     msg = OutgoingMessage(**unwrapped)
+# except ValidationError as e:
+#     # handle validation error
 
 
 if __name__ == "__main__":
