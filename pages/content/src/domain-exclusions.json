@@ -181,5 +181,120 @@
       ".js-dismissable-hero",
       ".s-sidebarwidget"
     ]
+  },
+  "www.ebay.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      "#gh-top",
+      "#rtm_html_165",
+      ".hl-popular-destinations",
+      ".hl-banner",
+      ".hl-footer"
+    ]
+  },
+  "www.imdb.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      ".ipc-page-content-container--center",
+      ".ipc-ad",
+      ".sc-16ede01-3",
+      ".sc-16ede01-6"
+    ]
+  },
+  "www.apple.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".ac-gn-header", ".ac-gn-footer", ".ac-ln-menu", ".ac-ln-footer"]
+  },
+  "www.microsoft.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      ".m-skip-to-main-content-link",
+      ".m-mega-menu",
+      ".m-footer",
+      ".m-ad"
+    ]
+  },
+  "www.booking.com": {
+    "exclusionSelectors": ["header", "nav", "footer", "#b2indexPage", ".bui-banner", ".bui-footer", ".bui-ad"]
+  },
+  "www.tripadvisor.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".ui_pill", ".ad", ".adHolder", ".branding"]
+  },
+  "www.espn.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".ad", ".ad-slot", ".global-nav", ".footer"]
+  },
+  "www.weather.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".ad", ".ad-banner", ".ad-slot", ".wx-ad"]
+  },
+  "www.craigslist.org": {
+    "exclusionSelectors": ["header", "nav", "footer", ".global-header", ".global-footer", ".cal", ".ban"]
+  },
+  "www.paypal.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".pp-header", ".pp-footer", ".ad", ".promo"]
+  },
+  "www.dropbox.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".c-nav-header", ".c-nav-footer", ".ad", ".promo"]
+  },
+  "www.salesforce.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".slds-global-header", ".slds-footer", ".ad", ".promo"]
+  },
+  "www.adobe.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".adobe-global-header", ".adobe-global-footer", ".ad", ".promo"]
+  },
+  "www.twitch.tv": {
+    "exclusionSelectors": ["header", "nav", "footer", ".top-nav", ".side-nav", ".ad-banner", ".tw-footer"]
+  },
+  "www.fandom.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".global-navigation", ".ad", ".ad-slot", ".wds-global-footer"]
+  },
+  "www.nike.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".nav-header", ".nav-footer", ".ad", ".promo"]
+  },
+  "www.zillow.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".zsg-nav", ".zsg-footer", ".zsg-ad", ".zsg-promo"]
+  },
+  "www.etsy.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".wt-header", ".wt-footer", ".ad", ".promo"]
+  },
+  "www.walmart.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".header", ".footer", ".ad", ".ad-slot"]
+  },
+  "www.homedepot.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".header", ".footer", ".ad", ".promo"]
+  },
+  "www.target.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".header", ".footer", ".ad", ".promo"]
+  },
+  "www.coursera.org": {
+    "exclusionSelectors": ["header", "nav", "footer", ".rc-GlobalFooter", ".rc-GlobalHeader", ".ad", ".promo"]
+  },
+  "www.udemy.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".ud-header", ".ud-footer", ".ad", ".promo"]
+  },
+  "www.khanacademy.org": {
+    "exclusionSelectors": ["header", "nav", "footer", ".header", ".footer", ".ad", ".promo"]
+  },
+  "www.ted.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".site-header", ".site-footer", ".ad", ".promo"]
+  },
+  "www.npr.org": {
+    "exclusionSelectors": ["header", "nav", "footer", ".global-header", ".global-footer", ".ad", ".promo"]
+  },
+  "www.wsj.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".wsj-header", ".wsj-footer", ".ad", ".promo"]
+  },
+  "www.bloomberg.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".bb-global-header", ".bb-global-footer", ".ad", ".promo"]
+  },
+  "www.forbes.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".header", ".footer", ".ad", ".promo"]
+  },
+  "www.theguardian.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".site-header", ".site-footer", ".ad", ".promo"]
   }
 }
