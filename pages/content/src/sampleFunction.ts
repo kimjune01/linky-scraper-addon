@@ -17,9 +17,6 @@ function extractLinkedInUsername(url: string): string | null {
 export function sampleFunction() {
   console.log('sampleFunction');
   const domain = window.location.hostname;
-  if (domain !== 'www.linkedin.com') {
-    return;
-  }
   const extractor = new ConfigurableExtractor(domain);
 
   // Extraction logic

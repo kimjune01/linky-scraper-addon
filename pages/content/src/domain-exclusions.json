@@ -24,5 +24,162 @@
       ".msg-overlay-conversation-bubble",
       ".global-nav"
     ]
+  },
+  "www.google.com": {
+    "exclusionSelectors": [
+      "#hdtb",
+      "#gb",
+      "#fbar",
+      "#foot",
+      "#bfoot",
+      ".appbar",
+      ".sfbg",
+      "header",
+      "footer",
+      "nav",
+      ".commercial-unit-desktop-top"
+    ]
+  },
+  "www.facebook.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      "[role='banner']",
+      "[role='navigation']",
+      "[role='complementary']",
+      "[aria-label='Sponsored']",
+      "[data-pagelet^='FeedUnit_'] [aria-label='Sponsored']"
+    ]
+  },
+  "twitter.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      "aside",
+      "[aria-label='Timeline: Trending now']",
+      "[aria-label='Who to follow']",
+      "[aria-label='Top Tweets']"
+    ]
+  },
+  "www.instagram.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      "aside",
+      "svg[aria-label='Instagram']",
+      "[role='presentation']",
+      "[aria-label='Suggestions For You']"
+    ]
+  },
+  "www.youtube.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      "#related",
+      "#comments",
+      ".ytp-ce-element",
+      ".ytp-endscreen-content",
+      ".ytp-chrome-bottom",
+      ".ytp-chrome-top"
+    ]
+  },
+  "www.reddit.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      "aside",
+      ".side",
+      ".promotedlink",
+      ".premium-banner-outer",
+      ".ListingPromoted"
+    ]
+  },
+  "www.amazon.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      "#nav-main",
+      "#navFooter",
+      ".navLeftFooter",
+      ".navFooterBackToTop",
+      ".a-section.a-spacing-large"
+    ]
+  },
+  "en.wikipedia.org": {
+    "exclusionSelectors": [
+      "#mw-head",
+      "#mw-panel",
+      "#footer",
+      ".mw-jump",
+      ".mw-editsection",
+      ".navbox",
+      ".infobox",
+      ".metadata"
+    ]
+  },
+  "www.yahoo.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".ad", ".ad-lrec", ".ad-leaderboard", ".ad-rail", ".ad-card"]
+  },
+  "www.bing.com": {
+    "exclusionSelectors": ["header", "nav", "footer", "#b_context", "#b_tween", ".b_ad", ".b_footer"]
+  },
+  "www.netflix.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".akira-header", ".akira-footer", ".billboard", ".bob-container"]
+  },
+  "www.pinterest.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".GridItems", ".UnauthBanner", ".SignupButton"]
+  },
+  "www.tumblr.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".l-header-container", ".l-footer-container", ".ad", ".sponsored"]
+  },
+  "www.tiktok.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      ".tiktok-1soki6-DivHeaderContainer",
+      ".tiktok-1g04lal-DivFooterContainer",
+      ".tiktok-1p4ddx8-DivAd"
+    ]
+  },
+  "www.quora.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".q-box.qu-mb--tiny", ".q-text.qu-mb--tiny", ".q-box.qu-mb--tiny"]
+  },
+  "medium.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      ".metabar",
+      ".js-stickyFooter",
+      ".branch-journeys-top",
+      ".branch-journeys-bottom"
+    ]
+  },
+  "www.nytimes.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".css-1r6wvpq", ".css-1bd8bfl", ".css-1fanzo5", ".ad"]
+  },
+  "www.cnn.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".zn-banner-text", ".ad", ".ad-container", ".ad-slot"]
+  },
+  "www.bbc.com": {
+    "exclusionSelectors": ["header", "nav", "footer", ".bbccom_slot", ".bbccom_advert", ".bbccom_advert--native"]
+  },
+  "stackoverflow.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      ".left-sidebar",
+      ".js-consent-banner",
+      ".js-dismissable-hero",
+      ".s-sidebarwidget"
+    ]
   }
 }
