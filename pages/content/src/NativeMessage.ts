@@ -1,4 +1,4 @@
-// pages/content/src/OutgoingMessage.ts
+// pages/content/src/NativeMessage.ts
 
 export enum NativeMessageType {
   Profile = 'profile',
@@ -8,7 +8,7 @@ export enum NativeMessageType {
 
 export type NativeMessage = {
   action: 'sendNativeMarkdown';
-  filename: string;
+  url: string;
   type: NativeMessageType;
   content: string;
 };

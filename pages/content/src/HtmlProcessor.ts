@@ -97,7 +97,8 @@ export class HtmlProcessor {
    * Processes markdown to clean up and improve readability
    */
   static processMarkdown(markdown: string): string {
-    const processed = markdown
+    console.log('Processing markdown before:', markdown);
+    let processed = markdown
       // Replace markdown links with just the link text
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
       // Replace HTML anchor tags with just their text content
@@ -116,43 +117,91 @@ export class HtmlProcessor {
       .replace(/<-[a-z][a-z0-9-]*->[\s\n]*(?:Loading)?[\s\n]*<\/-[a-z][a-z0-9-]*->/gi, '');
 
     // Remove lines that only contain whitespace and trim leading whitespace
-    return (
-      processed
-        .split('\n')
-        .map(line => {
-          const trimmed = line.trimStart();
-          // Remove 'logo' and all preceding characters on that line (case-insensitive)
-          if (/logo/i.test(trimmed)) {
-            return trimmed.replace(/^.*logo/i, '');
+    processed = processed
+      .split('\n')
+      .map(line => {
+        const trimmed = line.trimStart();
+        // Remove 'logo' and all preceding characters on that line (case-insensitive)
+        if (/logo/i.test(trimmed)) {
+          return trimmed.replace(/^.*logo/i, '');
+        }
+        return trimmed;
+      })
+      .filter(line => {
+        // Replace with newline if line ends with 'logo' (case-insensitive, ignoring trailing whitespace)
+        if (/logo\s*$/i.test(line)) return '';
+        // Replace with newline if line is only dashes (at least 2 dashes, possibly with spaces)
+        if (/^[-\s]{2,}$/.test(line)) return '';
+        // Replace with newline if line is a single word: subscribe, join, follow, or '-'
+        if (/^(subscribe|join|follow|connections|connect|-)$/i.test(line)) return '';
+        // Filter out lines that start with 'like' (case-insensitive, possibly with leading whitespace)
+        if (/^like/i.test(line)) return '';
+        // Filter out lines that end with the word 'followers' (case-insensitive, possibly with trailing whitespace)
+        if (/followers\s*$/i.test(line)) return '';
+        // Filter out lines that end with the word 'members' (case-insensitive, possibly with trailing whitespace)
+        if (/members\s*$/i.test(line)) return '';
+        return line.length > 0 ? line.trimStart() : '';
+      })
+      .join('\n')
+      // Remove a newline that immediately follows a line ending with a dash
+      .replace(/-\n\n/g, '-\n')
+      // Remove leading whitespaces from every line
+      .replace(/^ +/gm, '');
+
+    // Remove repeated consecutive lines if the latter is contained in the former, until no more can be removed
+    let lines = processed.split('\n');
+    let prevLength;
+    do {
+      prevLength = lines.length;
+      lines = lines.filter((line, idx, arr) => idx === 0 || !arr[idx - 1].includes(line));
+    } while (lines.length < prevLength);
+    processed = lines.join('\n');
+
+    // For each line, if it's odd length and has a space in the middle, and the front half equals the latter half, remove the latter half and the middle space
+    lines = processed.split('\n').map(line => {
+      if (line.length % 2 === 1) {
+        const mid = Math.floor(line.length / 2);
+        if (line[mid] === ' ') {
+          const front = line.slice(0, mid);
+          const back = line.slice(mid + 1);
+          if (front === back) {
+            return front;
           }
-          return trimmed;
-        })
-        .filter(line => {
-          // Replace with newline if line ends with 'logo' (case-insensitive, ignoring trailing whitespace)
-          if (/logo\s*$/i.test(line)) return '';
-          // Replace with newline if line is only dashes (at least 2 dashes, possibly with spaces)
-          if (/^[-\s]{2,}$/.test(line)) return '';
-          // Replace with newline if line is a single word: subscribe, join, follow, or '-'
-          if (/^(subscribe|join|follow|connections|connect|-)$/i.test(line)) return '';
-          // Filter out lines that start with 'like' (case-insensitive, possibly with leading whitespace)
-          if (/^like/i.test(line)) return '';
-          // Filter out lines that end with the word 'followers' (case-insensitive, possibly with trailing whitespace)
-          if (/followers\s*$/i.test(line)) return '';
-          // Filter out lines that end with the word 'members' (case-insensitive, possibly with trailing whitespace)
-          if (/members\s*$/i.test(line)) return '';
-          return line.length > 0 ? line.trimStart() : '';
-        })
-        .join('\n')
-        // Remove a newline that immediately follows a line ending with a dash
-        .replace(/-\n\n/g, '-\n')
-        // Double every newline
-        .replace(/\n/g, '\n\n')
-        // Remove leading whitespaces from every line
-        .replace(/^ +/gm, '')
-        // Remove a newline that immediately follows a line ending with a dash (again, in case doubling reintroduced it)
-        .replace(/-\s*\n{2,}/g, '-\n')
-        // Join lines where a line ends with a dash and the next line is non-empty
-        .replace(/-\s*\n+(\S)/g, '-$1')
-    );
+        }
+      }
+      return line;
+    });
+    processed = lines.join('\n');
+
+    // Insert a newline before every line that starts with # (heading), except if it's already at the start or already preceded by a newline
+    const headingLines = processed.split('\n');
+    const resultLines = [];
+    for (let i = 0; i < headingLines.length; i++) {
+      const line = headingLines[i];
+      if (line.startsWith('#') && (i === 0 || headingLines[i - 1] !== '')) {
+        resultLines.push('');
+      }
+      resultLines.push(line);
+    }
+    processed = resultLines.join('\n');
+
+    // For each line, remove sequentially repeated words
+    processed = processed
+      .split('\n')
+      .map(line => {
+        const words = line.split(/(\s+)/); // keep spaces as tokens
+        const filtered = words.filter((word, idx, arr) => {
+          // Only compare non-space tokens
+          if (/^\s+$/.test(word)) return true;
+          // Find previous non-space token
+          let prevIdx = idx - 1;
+          while (prevIdx >= 0 && /^\s+$/.test(arr[prevIdx])) prevIdx--;
+          return prevIdx < 0 || word !== arr[prevIdx];
+        });
+        return filtered.join('');
+      })
+      .join('\n');
+
+    return processed;
   }
 }
