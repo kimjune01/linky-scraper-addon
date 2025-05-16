@@ -97,7 +97,6 @@ export class HtmlProcessor {
    * Processes markdown to clean up and improve readability
    */
   static processMarkdown(markdown: string): string {
-    console.log('Processing markdown before:', markdown);
     let processed = markdown
       // Replace markdown links with just the link text
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')

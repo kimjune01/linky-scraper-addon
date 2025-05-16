@@ -36,7 +36,8 @@
     "copy_env": "bash bash-scripts/copy_env.sh",
     "set-global-env": "bash bash-scripts/set_global_env.sh",
     "postinstall": "pnpm build:eslint && pnpm copy_env",
-    "module-manager": "pnpm -F module-manager start"
+    "module-manager": "pnpm -F module-manager start",
+    "test": "vitest"
   },
   "dependencies": {
     "dom-to-semantic-markdown": "^1.3.0",
@@ -84,7 +85,8 @@
     "turbo": "^2.4.2",
     "typescript": "5.8.1-rc",
     "typescript-eslint": "^8.20.0",
-    "vite": "6.1.0"
+    "vite": "6.1.0",
+    "vitest": "^3.1.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json}": [

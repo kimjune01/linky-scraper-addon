@@ -3,8 +3,17 @@ import sys
 import struct
 import json
 import os
-from determine_collection_name import determine_collection_name
-# import chromadb  # Uncomment and configure as needed for ChromaDB usage
+import time
+from determine_collection_name import determine_collection_name, split_url
+import platform
+
+try:
+    import chromadb
+
+    chroma_client = chromadb.HttpClient(host="localhost", port=8000)
+except ImportError:
+    chroma_client = None
+    print("Warning: chromadb is not installed. ChromaDB features will be disabled.")
 
 
 def write_content_to_file(filename, content):
@@ -22,6 +31,16 @@ def write_content_to_file(filename, content):
 
 
 def read_message():
+    try:
+        import chromadb
+
+        chroma_client = chromadb.HttpClient(host="localhost", port=8000)
+    except Exception as e:
+        chroma_client = None
+        return {
+            "message": f"ChromaDB error: {e}, platform: {platform.python_version()}, {sys.executable}, {sys.version}"
+        }
+
     # Read the message length (first 4 bytes, little-endian)
     raw_length = sys.stdin.buffer.read(4)
     if len(raw_length) == 0:
@@ -45,12 +64,28 @@ def read_message():
 
     # Save to ChromaDB
     collection_name = determine_collection_name(url)
-    # collection = chromadb.get_or_create_collection(collection_name)
-    # collection.add(
-    #     documents=[content],
-    #     metadatas=[{"url": url}],
-    #     ids=[url],
-    # )
+    domain, _path, _query = split_url(url)
+    collection_metadata = {
+        "domain": domain,
+        "description": f"Collection for {collection_name}",
+        "created_at": int(time.time()),
+    }
+    collection = None
+    if chroma_client is None:
+        return {"message": "ChromaDB is not installed"}
+    # Check if collection exists
+    existing_collections = [c.name for c in chroma_client.list_collections()]
+    if collection_name in existing_collections:
+        collection = chroma_client.get_collection(collection_name)
+    else:
+        collection = chroma_client.create_collection(
+            collection_name, metadata=collection_metadata
+        )
+    collection.add(
+        documents=[content],
+        metadatas=[{"url": url}],
+        ids=[url],
+    )
 
     return {
         "message": {
