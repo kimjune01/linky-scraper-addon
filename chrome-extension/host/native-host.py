@@ -161,11 +161,11 @@ def save_to_chromadb(url, content):
         "domain": domain,
         "description": f"Collection for {collection_name}",
         "created_at": created_at,
-        "content_size_kb": round(len(content.encode("utf-8")) / 1024, 2),
     }
     document_metadata = {
         "url": url,
         "created_at": created_at,
+        "content_size_kb": round(len(content.encode("utf-8")) / 1024, 2),
     }
     if chroma_client is None:
         return {"message": "ChromaDB is not installed"}
@@ -177,20 +177,25 @@ def save_to_chromadb(url, content):
         collection = chroma_client.create_collection(
             collection_name, metadata=collection_metadata
         )
-    # Check if document with id exists
+    # Check if document with id exists in the last minute.
+    # Allow duplicate documents outside the same minute.
+    minute_timestamp = int(time.time() / 60)
+    timestamped_url = f"{url}_{minute_timestamp}"
     try:
-        existing = collection.get(ids=[url])
-        exists = existing and existing.get("ids") and url in existing["ids"]
+        existing = collection.get(ids=[timestamped_url])
+        exists = existing and existing.get("ids") and timestamped_url in existing["ids"]
     except Exception:
         exists = False
     if exists:
         # Update the document and metadata
-        collection.update(ids=[url], documents=[content], metadatas=[document_metadata])
+        collection.update(
+            ids=[timestamped_url], documents=[content], metadatas=[document_metadata]
+        )
     else:
         collection.add(
             documents=[content],
             metadatas=[document_metadata],
-            ids=[url],
+            ids=[timestamped_url],
         )
     return {
         "message": {
