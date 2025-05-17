@@ -63,29 +63,7 @@ def read_message():
     filename = write_content_to_file(filename, content)
 
     # Save to ChromaDB
-    collection_name = determine_collection_name(url)
-    domain, _path, _query = split_url(url)
-    collection_metadata = {
-        "domain": domain,
-        "description": f"Collection for {collection_name}",
-        "created_at": int(time.time()),
-    }
-    collection = None
-    if chroma_client is None:
-        return {"message": "ChromaDB is not installed"}
-    # Check if collection exists
-    existing_collections = [c.name for c in chroma_client.list_collections()]
-    if collection_name in existing_collections:
-        collection = chroma_client.get_collection(collection_name)
-    else:
-        collection = chroma_client.create_collection(
-            collection_name, metadata=collection_metadata
-        )
-    collection.add(
-        documents=[content],
-        metadatas=[{"url": url}],
-        ids=[url],
-    )
+    collection_name = save_to_chromadb(url, content)
 
     return {
         "message": {
@@ -185,6 +163,48 @@ def test_make_filename():
         print(
             f"URL: {url}\nExpected: {expected}\nResult:   {result}\n{'PASS' if result == expected else 'FAIL'}\n"
         )
+
+
+def save_to_chromadb(url, content):
+    collection_name = determine_collection_name(url)
+    domain, _path, _query = split_url(url)
+    created_at = int(time.time())
+    collection_metadata = {
+        "domain": domain,
+        "description": f"Collection for {collection_name}",
+        "created_at": created_at,
+        "content_size_kb": round(len(content.encode("utf-8")) / 1024, 2),
+    }
+    document_metadata = {
+        "url": url,
+        "created_at": created_at,
+    }
+    if chroma_client is None:
+        return {"message": "ChromaDB is not installed"}
+    # Check if collection exists
+    existing_collections = [c.name for c in chroma_client.list_collections()]
+    if collection_name in existing_collections:
+        collection = chroma_client.get_collection(collection_name)
+    else:
+        collection = chroma_client.create_collection(
+            collection_name, metadata=collection_metadata
+        )
+    # Check if document with id exists
+    try:
+        existing = collection.get(ids=[url])
+        exists = existing and existing.get("ids") and url in existing["ids"]
+    except Exception:
+        exists = False
+    if exists:
+        # Update the document and metadata
+        collection.update(ids=[url], documents=[content], metadatas=[document_metadata])
+    else:
+        collection.add(
+            documents=[content],
+            metadatas=[document_metadata],
+            ids=[url],
+        )
+    return collection_name
 
 
 if __name__ == "__main__":

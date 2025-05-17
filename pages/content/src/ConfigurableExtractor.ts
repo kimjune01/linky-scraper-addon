@@ -16,6 +16,7 @@ export class ConfigurableExtractor {
   private inclusionSelectors: string[] | null;
   private domain: string;
   private debugMode: boolean;
+  private exclusionTextLiterals: string[] = ['download', 'search'];
 
   /**
    * Creates a new ConfigurableContentExtractor
@@ -90,27 +91,24 @@ export class ConfigurableExtractor {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
-    let elementsToProcess: HTMLElement[] = [];
+    const elementsToProcessSet = new Set<HTMLElement>();
     if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
-      // Only process elements matching inclusion selectors
-      this.inclusionSelectors.forEach(selector => {
-        tempDiv.querySelectorAll(selector).forEach(el => {
-          elementsToProcess.push(el as HTMLElement);
-        });
+      const combinedSelector = this.inclusionSelectors.join(',');
+      tempDiv.querySelectorAll(combinedSelector).forEach(el => {
+        elementsToProcessSet.add(el as HTMLElement);
       });
     } else {
-      // No inclusion selectors: process the whole document
-      elementsToProcess = [tempDiv];
+      elementsToProcessSet.add(tempDiv);
     }
+
+    let elementsToProcess = Array.from(elementsToProcessSet);
 
     // For each included element, remove excluded elements inside it
     elementsToProcess.forEach(element => {
-      this.exclusionSelectors.forEach(selector => {
-        const elements = element.querySelectorAll(selector);
-        elements.forEach(el => {
-          el.remove();
-        });
-      });
+      if (this.exclusionSelectors.length > 0) {
+        const combinedSelector = this.exclusionSelectors.join(',');
+        element.querySelectorAll(combinedSelector).forEach(el => el.remove());
+      }
     });
 
     // Gather the HTML from all included elements
@@ -135,29 +133,26 @@ export class ConfigurableExtractor {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
-    let elementsToProcess: HTMLElement[] = [];
+    const elementsToProcessSet = new Set<HTMLElement>();
     if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
-      // Only process elements matching inclusion selectors
-      this.inclusionSelectors.forEach(selector => {
-        tempDiv.querySelectorAll(selector).forEach(el => {
-          elementsToProcess.push(el as HTMLElement);
-        });
+      const combinedSelector = this.inclusionSelectors.join(',');
+      tempDiv.querySelectorAll(combinedSelector).forEach(el => {
+        elementsToProcessSet.add(el as HTMLElement);
       });
     } else {
-      // No inclusion selectors: process the whole document
-      elementsToProcess = [tempDiv];
+      elementsToProcessSet.add(tempDiv);
     }
+
+    let elementsToProcess = Array.from(elementsToProcessSet);
 
     // For each included element, remove excluded elements inside it
     elementsToProcess.forEach(element => {
       this.debugHighlightExcludedElements(element);
       this.debugHighlightIncludedElements(element);
-      this.exclusionSelectors.forEach(selector => {
-        const elements = element.querySelectorAll(selector);
-        elements.forEach(el => {
-          el.remove();
-        });
-      });
+      if (this.exclusionSelectors.length > 0) {
+        const combinedSelector = this.exclusionSelectors.join(',');
+        element.querySelectorAll(combinedSelector).forEach(el => el.remove());
+      }
     });
 
     // Gather the HTML from all included elements
@@ -177,51 +172,41 @@ export class ConfigurableExtractor {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
-    let elementsToProcess: HTMLElement[] = [];
+    const elementsToProcessSet = new Set<HTMLElement>();
     if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
-      // Only process elements matching inclusion selectors
-      this.inclusionSelectors.forEach(selector => {
-        tempDiv.querySelectorAll(selector).forEach(el => {
-          elementsToProcess.push(el as HTMLElement);
-        });
+      const combinedSelector = this.inclusionSelectors.join(',');
+      tempDiv.querySelectorAll(combinedSelector).forEach(el => {
+        elementsToProcessSet.add(el as HTMLElement);
       });
     } else {
-      // No inclusion selectors: process the whole document
-      elementsToProcess = [tempDiv];
+      elementsToProcessSet.add(tempDiv);
     }
+
+    let elementsToProcess = Array.from(elementsToProcessSet);
 
     // For each included element, remove excluded elements inside it
     elementsToProcess.forEach(element => {
       this.debugHighlightExcludedElements(element);
       this.debugHighlightIncludedElements(element);
-      this.exclusionSelectors.forEach(selector => {
-        const elements = element.querySelectorAll(selector);
-        elements.forEach(el => {
-          el.remove();
-        });
-      });
+      if (this.exclusionSelectors.length > 0) {
+        const combinedSelector = this.exclusionSelectors.join(',');
+        element.querySelectorAll(combinedSelector).forEach(el => el.remove());
+      }
     });
 
     // Extract anchor tags that contain /in/ and return the list of extracted handles
-    const anchorHandles: string[] = [];
+    const anchorHandles = new Set<string>();
     const anchors = tempDiv.querySelectorAll('a[href*="/in/"]');
     anchors.forEach(anchor => {
       const href = anchor.getAttribute('href');
       if (href && href.includes('miniProfileUrn')) {
         const match = href.match(/\/in\/([^/?#]+)/i);
-        if (match && match[1]) {
-          const handle = match[1];
-          // Only add if it does NOT start with "ACoA"
-          if (!/^ACoA/i.test(handle)) {
-            anchorHandles.push(handle);
-          }
+        if (match && match[1] && !/^ACoA/i.test(match[1])) {
+          anchorHandles.add(match[1]);
         }
       }
     });
-    const uniqueHandles = Array.from(new Set(anchorHandles));
-    console.log('uniqueHandles', uniqueHandles);
-    // Deduplicate for unique results only
-    return uniqueHandles;
+    return Array.from(anchorHandles);
   }
 
   static isConfigured(host: string): boolean {

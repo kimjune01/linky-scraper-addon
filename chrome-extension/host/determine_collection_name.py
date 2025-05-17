@@ -249,7 +249,8 @@ def determine_collection_name(url):
 
         # Generic categorization based on domain
         if "blog." in domain or "/blog/" in path:
-            return "blog_posts"
+            main_domain = get_clean_domain(domain)
+            return f"{main_domain}_blog_posts"
 
         # Google services
         if "drive.google.com" in domain:
@@ -354,10 +355,16 @@ def determine_collection_name(url):
         if re.search(r"\\.(py|js|ts|java|cpp|c|rb|go|rs|php|sh)$", path, re.IGNORECASE):
             return "code_files"
 
-        # Default case: use the domain as a prefix
-        # Extract the main domain name without TLD
-        clean_domain = get_clean_domain(domain)
-        return f"{clean_domain}_pages"
+        # Default case: use the main domain as a prefix
+        main_domain = get_clean_domain(domain)
+        # If subdomain is present and not www, include it
+        subdomain = None
+        domain_parts = domain.split(".")
+        if len(domain_parts) > 2 and domain_parts[0] != "www":
+            subdomain = domain_parts[0]
+        if subdomain:
+            return f"{main_domain}_{subdomain}_pages"
+        return f"{main_domain}_pages"
 
     except Exception as e:
         print(f"Error parsing URL: {e}")
@@ -381,19 +388,16 @@ def identify_service_from_domain(domain):
 
 def get_clean_domain(domain):
     """
-    Helper function to get clean domain name
+    Helper function to get the main domain name (second-to-last part before TLD)
     """
     # Remove common TLDs and subdomains
-    clean_domain = re.sub(r"^www\.", "", domain)
-
-    # Strip TLD
-    clean_domain = re.sub(r"\.(com|org|net|io|co|gov|edu|info).*$", "", clean_domain)
-
-    # Handle multi-part domains (e.g., co.uk)
+    clean_domain = re.sub(r"^www\\.", "", domain)
+    # Split domain into parts
     parts = clean_domain.split(".")
-    if len(parts) > 1:
+    # Handle multi-part domains (e.g., co.uk)
+    if len(parts) >= 2:
+        # If last part is a common TLD, use the second-to-last part as main domain
         return parts[-2]
-
     return clean_domain
 
 
