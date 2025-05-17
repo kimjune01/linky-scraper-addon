@@ -1,6 +1,7 @@
 import { ConfigurableExtractor } from './ConfigurableExtractor';
 import type { NativeMessage } from './NativeMessage';
 import { NativeMessageType } from './NativeMessage';
+import { Deduplicator } from './deduplicator';
 // import { isContentLoading } from './isContentLoading';
 
 // Debounce utility (can be reused elsewhere)
@@ -15,28 +16,18 @@ function debounce<T extends (...args: unknown[]) => void>(fn: T, delay: number):
 export function sampleFunction() {
   const domain = window.location.hostname;
   const extractor = new ConfigurableExtractor(domain);
-
-  let previousContentHash: string | null = null;
-
-  function hashContent(content: string): string {
-    // Simple non-secure hash (djb2)
-    let hash = 5381;
-    for (let i = 0; i < content.length; i++) {
-      hash = (hash << 5) + hash + content.charCodeAt(i); // hash * 33 + c
-    }
-    return hash.toString();
-  }
+  const deduplicator = new Deduplicator();
 
   // Extraction logic
   const extractAndLog = () => {
     if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) return;
     const content = extractor.extractContent(document.body.innerHTML);
-    const contentHash = hashContent(content);
-    if (contentHash === previousContentHash) {
+    if (!deduplicator.isContentChanged(content)) {
       console.log('Content unchanged, skipping');
       return;
     }
-    previousContentHash = contentHash;
+    deduplicator.updateWithContent(content);
+
     const message: NativeMessage = {
       action: 'sendNativeMarkdown',
       type: NativeMessageType.Content,
