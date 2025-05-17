@@ -30,18 +30,7 @@ def write_content_to_file(filename, content):
     return filename
 
 
-def read_message():
-    try:
-        import chromadb
-
-        chroma_client = chromadb.HttpClient(host="localhost", port=8000)
-    except Exception as e:
-        chroma_client = None
-        return {
-            "message": f"ChromaDB error: {e}, platform: {platform.python_version()}, {sys.executable}, {sys.version}"
-        }
-
-    # Read the message length (first 4 bytes, little-endian)
+def read_message():  # Read the message length (first 4 bytes, little-endian)
     raw_length = sys.stdin.buffer.read(4)
     if len(raw_length) == 0:
         sys.exit(0)
@@ -58,18 +47,16 @@ def read_message():
     content = unwrapped.get("content")
     url = unwrapped.get("url")
 
-    # Save to directory
+    return save_to_chromadb(url, content)
+
+
+def save_to_file(url, content):
     filename = make_filename(url)
     filename = write_content_to_file(filename, content)
-
-    # Save to ChromaDB
-    collection_name = save_to_chromadb(url, content)
-
     return {
         "message": {
             "saved": True,
             "filename": filename,
-            "collection_name": collection_name,
         }
     }
 
@@ -122,8 +109,9 @@ def main():
 def validate_native_message(data: dict) -> bool:
     # Check required fields
     required_fields = {"action", "url", "type", "content"}
-    if not required_fields.issubset(data):
-        raise Exception("Missing required fields")
+    missing_fields = required_fields - data.keys()
+    if missing_fields:
+        raise Exception(f"Missing required fields: {', '.join(missing_fields)}")
 
     # Check action is exactly 'sendNativeMarkdown'
     if data["action"] != "sendNativeMarkdown":
@@ -204,7 +192,12 @@ def save_to_chromadb(url, content):
             metadatas=[document_metadata],
             ids=[url],
         )
-    return collection_name
+    return {
+        "message": {
+            "saved": True,
+            "collection_name": collection_name,
+        }
+    }
 
 
 if __name__ == "__main__":
