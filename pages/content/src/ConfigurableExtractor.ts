@@ -88,7 +88,7 @@ export class ConfigurableExtractor {
   }
 
   extractContent(html: string): string {
-    this.debugHighlightExcludedElements(document.body);
+    // this.debugHighlightExcludedElements(document.body);
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
@@ -115,19 +115,14 @@ export class ConfigurableExtractor {
     });
 
     // Gather the HTML from all included elements
-    console.time('gather and process HTML');
     let extractedContent = elementsToProcess.map(el => el.innerHTML).join('\n');
-
     extractedContent = HtmlProcessor.cleanHtmlDom(extractedContent);
-    console.timeEnd('gather and process HTML');
 
     // Convert to markdown
     let markdown = convertHtmlToMarkdown(extractedContent);
-
     markdown = HtmlProcessor.processMarkdown(markdown);
-    markdown = HtmlProcessor.truncateTo100Kb(markdown);
+    markdown = HtmlProcessor.truncateToFit(markdown);
     // Process the markdown for better readability
-    console.log(markdown);
     return markdown;
   }
 

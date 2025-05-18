@@ -127,8 +127,8 @@ export class HtmlProcessor {
     return processed;
   }
 
-  static truncateTo100Kb(markdown: string): string {
-    const maxLength = 100 * 1024;
+  static truncateToFit(markdown: string): string {
+    const maxLength = 30 * 1024;
     if (markdown.length > maxLength) {
       return markdown.slice(0, maxLength) + '...';
     }
@@ -182,11 +182,17 @@ export class HtmlProcessor {
       // Remove the now-empty element
       el.remove();
     });
-
     // Remove single-child parents recursively
     function flattenSingleChildParents(element: Element) {
       let child = element.firstElementChild;
-      while (element.children.length === 1 && element !== tempDiv) {
+      // Only flatten if:
+      // - The element has exactly one child
+      // - The element's text content (trimmed) is empty or matches the child's text content (i.e., no extra text)
+      while (
+        element.children.length === 1 &&
+        element !== tempDiv &&
+        (!element.textContent || element.textContent.trim() === child?.textContent?.trim())
+      ) {
         const parent = element.parentElement;
         if (!parent) break;
         parent.replaceChild(child!, element);
