@@ -21,14 +21,13 @@ export function sampleFunction() {
   // Extraction logic
   const extractAndLog = () => {
     if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) return;
-    const content = extractor.extractContent();
+    const content = extractor.extractContent(document.body.innerHTML);
     if (!deduplicator.isContentChanged(content)) {
       console.log('Content unchanged, skipping');
       return;
     } else {
       console.log('Content changed, extracting');
     }
-    console.log(content);
     deduplicator.updateWithContent(content);
 
     const message: NativeMessage = {

@@ -60,6 +60,28 @@ export class HtmlProcessor {
     });
   }
 
+  static removeTableTags(html: string): string {
+    // flatten html to remove all nested table elements and their closing tags
+    html = html.replace(/<table[^>]*>/g, '');
+    html = html.replace(/<\/table[^>]*>/g, '');
+    html = html.replace(/<tr[^>]*>/g, '');
+    html = html.replace(/<\/tr[^>]*>/g, '');
+    html = html.replace(/<td[^>]*>/g, '');
+    html = html.replace(/<\/td[^>]*>/g, '');
+    html = html.replace(/<th[^>]*>/g, '');
+    html = html.replace(/<\/th[^>]*>/g, '');
+    html = html.replace(/<tbody[^>]*>/g, '');
+    html = html.replace(/<\/tbody[^>]*>/g, '');
+    html = html.replace(/<thead[^>]*>/g, '');
+    html = html.replace(/<\/thead[^>]*>/g, '');
+    html = html.replace(/<tfoot[^>]*>/g, '');
+    html = html.replace(/<\/tfoot[^>]*>/g, '');
+    html = html.replace(/<caption[^>]*>/g, '');
+    html = html.replace(/<\/caption[^>]*>/g, '');
+
+    return html;
+  }
+
   /**
    * Removes elements with class "Layout-sidebar" from HTML content
    */
@@ -202,5 +224,48 @@ export class HtmlProcessor {
       .join('\n');
 
     return processed;
+  }
+
+  /**
+   * Removes all parent elements that have only one child, recursively.
+   */
+  static removeSingleChildParents(html: string): string {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    function flattenSingleChildParents(element: Element) {
+      // Use a while loop to handle cases where flattening creates new single-child parents
+      let child = element.firstElementChild;
+      while (element.children.length === 1 && element !== tempDiv) {
+        // Replace this element with its only child
+        const parent = element.parentElement;
+        if (!parent) break;
+        parent.replaceChild(child!, element);
+        element = child!;
+        child = element.firstElementChild;
+      }
+      // Recursively process children
+      Array.from(element.children).forEach(flattenSingleChildParents);
+    }
+
+    Array.from(tempDiv.children).forEach(flattenSingleChildParents);
+
+    return tempDiv.innerHTML;
+  }
+
+  static removeEmptyElements(html: string): string {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // Select all elements you want to check for emptiness
+    const elements = tempDiv.querySelectorAll('div, p, span, li, ul, ol, h1, h2, h3, h4, h5, h6, center');
+    elements.forEach(element => {
+      // Check if the element is empty (no children and no text content)
+      if (element.children.length === 0 && (!element.textContent || element.textContent.trim() === '')) {
+        element.remove();
+      }
+    });
+
+    return tempDiv.innerHTML;
   }
 }

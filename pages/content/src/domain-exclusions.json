@@ -376,5 +376,23 @@
   },
   "www.theguardian.com": {
     "exclusionSelectors": ["header", "nav", "footer", ".site-header", ".site-footer", ".ad", ".promo"]
+  },
+  "news.ycombinator.com": {
+    "exclusionSelectors": [
+      "header",
+      "nav",
+      "footer",
+      ".hn-header",
+      ".hn-footer",
+      ".ad",
+      ".promo",
+      "textarea",
+      "span.age",
+      "span.navs",
+      "div.reply",
+      "div.votearrow",
+      "span.subline",
+      "span.pagetop"
+    ]
   }
 }

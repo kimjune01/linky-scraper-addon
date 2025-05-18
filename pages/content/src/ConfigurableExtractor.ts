@@ -87,12 +87,10 @@ export class ConfigurableExtractor {
     console.log('[ConfigurableContentExtractor] Inclusion selectors:', this.inclusionSelectors);
   }
 
-  extractContent(): string {
-    // this.debugHighlightExcludedElements(document.body);
+  extractContent(html: string): string {
+    this.debugHighlightExcludedElements(document.body);
     const tempDiv = document.createElement('div');
-    const elements = getAboveTheFoldTopLevelElements();
-    const htmlSnippets = elements.map(el => el.outerHTML);
-    tempDiv.innerHTML = htmlSnippets.join('\n');
+    tempDiv.innerHTML = html;
 
     const elementsToProcessSet = new Set<HTMLElement>();
     if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
@@ -118,12 +116,17 @@ export class ConfigurableExtractor {
     let extractedContent = elementsToProcess.map(el => el.innerHTML).join('\n');
     extractedContent = HtmlProcessor.removeImageTags(extractedContent);
     extractedContent = HtmlProcessor.replaceAnchorTags(extractedContent);
+    extractedContent = HtmlProcessor.removeTableTags(extractedContent);
+    extractedContent = HtmlProcessor.removeSingleChildParents(extractedContent);
+    extractedContent = HtmlProcessor.removeEmptyElements(extractedContent);
 
     // Convert to markdown
-    const markdown = convertHtmlToMarkdown(extractedContent);
+    let markdown = convertHtmlToMarkdown(extractedContent);
 
+    console.log(markdown);
+    markdown = HtmlProcessor.processMarkdown(markdown);
     // Process the markdown for better readability
-    return HtmlProcessor.processMarkdown(markdown);
+    return markdown;
   }
 
   /**
@@ -215,51 +218,4 @@ export class ConfigurableExtractor {
   static isConfigured(host: string): boolean {
     return host in domainExclusions;
   }
-}
-
-function getAboveTheFoldTopLevelElements() {
-  const fold = window.innerHeight;
-  const elements: HTMLElement[] = [];
-
-  function traverse(node: HTMLElement) {
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const rect = node.getBoundingClientRect();
-      if (rect.top < fold && rect.bottom > 0) {
-        // Only add if parent is not already in the list
-        if (!elements.some(parent => parent.contains(node))) {
-          elements.push(node);
-        }
-        // Do NOT traverse children if this node is already included
-        return;
-      }
-      // Otherwise, keep traversing children
-      for (const child of Array.from(node.children)) {
-        traverse(child as HTMLElement);
-      }
-    }
-  }
-
-  traverse(document.body);
-  return elements;
-}
-
-function filterOutBelowTheFoldElements(root: HTMLElement = document.body) {
-  const fold = window.innerHeight;
-
-  function traverse(node: HTMLElement) {
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const rect = node.getBoundingClientRect();
-      // If the element is completely below the fold, remove it
-      if (rect.top >= fold) {
-        node.remove();
-        return;
-      }
-      // Otherwise, traverse children
-      for (const child of Array.from(node.children)) {
-        traverse(child as HTMLElement);
-      }
-    }
-  }
-
-  traverse(root);
 }
