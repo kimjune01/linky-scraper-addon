@@ -176,7 +176,12 @@
       "div.clearleft",
       "span.score",
       "time.live-timestamp",
-      "span.morecomments"
+      "span.morecomments",
+      "div.deleted",
+      "span.score-hidden",
+      "div.usertext-edit",
+      "div.menuarea",
+      "time.edited-timestamp"
     ]
   },
   "www.amazon.com": {
