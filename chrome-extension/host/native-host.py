@@ -153,6 +153,26 @@ def test_make_filename():
         )
 
 
+def update_lru_collection(chroma_client, collection_name):
+    """
+    Update the collection's metadata property 'updated_at' to signal its recency.
+    """
+    if chroma_client is None:
+        return
+    try:
+        collection = chroma_client.get_collection(collection_name)
+        metadata = collection.metadata or {}
+        metadata = dict(metadata)  # ensure it's mutable
+        metadata["updated_at"] = int(time.time())
+        collection.modify(metadata=metadata)
+    except Exception as e:
+        print(
+            f"Failed to update LRU collection metadata for {collection_name}: {e}",
+            file=sys.stderr,
+        )
+        sys.stderr.flush()
+
+
 def save_to_chromadb(url, content):
     collection_name = determine_collection_name(url)
     domain, _path, _query = split_url(url)
@@ -197,6 +217,8 @@ def save_to_chromadb(url, content):
             metadatas=[document_metadata],
             ids=[timestamped_url],
         )
+    # Update the LRU collection after successful save
+    update_lru_collection(chroma_client, collection_name)
     return {
         "message": {
             "saved": True,

@@ -164,7 +164,19 @@
       ".side",
       ".promotedlink",
       ".premium-banner-outer",
-      ".ListingPromoted"
+      ".ListingPromoted",
+      "form.premium-banner",
+      ".footer-parent",
+      "#more_t1_mstpkea",
+      ".flat-list",
+      ".panestack-title",
+      "#sr-header-area",
+      "#header-bottom-left",
+      "#header-bottom-right",
+      "div.clearleft",
+      "span.score",
+      "time.live-timestamp",
+      "span.morecomments"
     ]
   },
   "www.amazon.com": {

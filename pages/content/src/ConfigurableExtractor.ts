@@ -48,7 +48,7 @@ export class ConfigurableExtractor {
    * @param element The root element to start highlighting from
    */
   private debugHighlightExcludedElements(element: HTMLElement): void {
-    if (!this.debugMode) return;
+    console.log('debugHighlightExcludedElements', this.exclusionSelectors);
     this.exclusionSelectors.forEach(selector => {
       const elements = element.querySelectorAll(selector);
       elements.forEach(el => {
@@ -87,9 +87,12 @@ export class ConfigurableExtractor {
     console.log('[ConfigurableContentExtractor] Inclusion selectors:', this.inclusionSelectors);
   }
 
-  extractContent(html: string): string {
+  extractContent(): string {
+    // this.debugHighlightExcludedElements(document.body);
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
+    const elements = getAboveTheFoldTopLevelElements();
+    const htmlSnippets = elements.map(el => el.outerHTML);
+    tempDiv.innerHTML = htmlSnippets.join('\n');
 
     const elementsToProcessSet = new Set<HTMLElement>();
     if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
@@ -101,7 +104,7 @@ export class ConfigurableExtractor {
       elementsToProcessSet.add(tempDiv);
     }
 
-    let elementsToProcess = Array.from(elementsToProcessSet);
+    const elementsToProcess = Array.from(elementsToProcessSet);
 
     // For each included element, remove excluded elements inside it
     elementsToProcess.forEach(element => {
@@ -182,7 +185,7 @@ export class ConfigurableExtractor {
       elementsToProcessSet.add(tempDiv);
     }
 
-    let elementsToProcess = Array.from(elementsToProcessSet);
+    const elementsToProcess = Array.from(elementsToProcessSet);
 
     // For each included element, remove excluded elements inside it
     elementsToProcess.forEach(element => {
@@ -212,4 +215,51 @@ export class ConfigurableExtractor {
   static isConfigured(host: string): boolean {
     return host in domainExclusions;
   }
+}
+
+function getAboveTheFoldTopLevelElements() {
+  const fold = window.innerHeight;
+  const elements: HTMLElement[] = [];
+
+  function traverse(node: HTMLElement) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const rect = node.getBoundingClientRect();
+      if (rect.top < fold && rect.bottom > 0) {
+        // Only add if parent is not already in the list
+        if (!elements.some(parent => parent.contains(node))) {
+          elements.push(node);
+        }
+        // Do NOT traverse children if this node is already included
+        return;
+      }
+      // Otherwise, keep traversing children
+      for (const child of Array.from(node.children)) {
+        traverse(child as HTMLElement);
+      }
+    }
+  }
+
+  traverse(document.body);
+  return elements;
+}
+
+function filterOutBelowTheFoldElements(root: HTMLElement = document.body) {
+  const fold = window.innerHeight;
+
+  function traverse(node: HTMLElement) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const rect = node.getBoundingClientRect();
+      // If the element is completely below the fold, remove it
+      if (rect.top >= fold) {
+        node.remove();
+        return;
+      }
+      // Otherwise, traverse children
+      for (const child of Array.from(node.children)) {
+        traverse(child as HTMLElement);
+      }
+    }
+  }
+
+  traverse(root);
 }
