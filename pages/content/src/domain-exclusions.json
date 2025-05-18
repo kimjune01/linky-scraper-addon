@@ -397,7 +397,9 @@
       "div.reply",
       "div.votearrow",
       "span.subline",
-      "span.pagetop"
+      "span.pagetop",
+      "span.yclinks",
+      "form"
     ]
   }
 }

@@ -95,9 +95,11 @@ export class ConfigurableExtractor {
     const elementsToProcessSet = new Set<HTMLElement>();
     if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
       const combinedSelector = this.inclusionSelectors.join(',');
+      console.time('querySelectorAll inclusionSelectors');
       tempDiv.querySelectorAll(combinedSelector).forEach(el => {
         elementsToProcessSet.add(el as HTMLElement);
       });
+      console.timeEnd('querySelectorAll inclusionSelectors');
     } else {
       elementsToProcessSet.add(tempDiv);
     }
@@ -113,106 +115,20 @@ export class ConfigurableExtractor {
     });
 
     // Gather the HTML from all included elements
+    console.time('gather and process HTML');
     let extractedContent = elementsToProcess.map(el => el.innerHTML).join('\n');
-    extractedContent = HtmlProcessor.removeImageTags(extractedContent);
-    extractedContent = HtmlProcessor.replaceAnchorTags(extractedContent);
-    extractedContent = HtmlProcessor.removeTableTags(extractedContent);
-    extractedContent = HtmlProcessor.removeSingleChildParents(extractedContent);
-    extractedContent = HtmlProcessor.removeEmptyElements(extractedContent);
+
+    extractedContent = HtmlProcessor.cleanHtmlDom(extractedContent);
+    console.timeEnd('gather and process HTML');
 
     // Convert to markdown
     let markdown = convertHtmlToMarkdown(extractedContent);
 
-    console.log(markdown);
     markdown = HtmlProcessor.processMarkdown(markdown);
+    markdown = HtmlProcessor.truncateTo100Kb(markdown);
     // Process the markdown for better readability
+    console.log(markdown);
     return markdown;
-  }
-
-  /**
-   * Extracts content from HTML while including and excluding specified selectors
-   * @param html The HTML content to extract from
-   * @returns Extracted content as a string
-   */
-  extractProfileContent(html: string): string {
-    // Create a temporary DOM element to parse the HTML
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-
-    const elementsToProcessSet = new Set<HTMLElement>();
-    if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
-      const combinedSelector = this.inclusionSelectors.join(',');
-      tempDiv.querySelectorAll(combinedSelector).forEach(el => {
-        elementsToProcessSet.add(el as HTMLElement);
-      });
-    } else {
-      elementsToProcessSet.add(tempDiv);
-    }
-
-    let elementsToProcess = Array.from(elementsToProcessSet);
-
-    // For each included element, remove excluded elements inside it
-    elementsToProcess.forEach(element => {
-      this.debugHighlightExcludedElements(element);
-      this.debugHighlightIncludedElements(element);
-      if (this.exclusionSelectors.length > 0) {
-        const combinedSelector = this.exclusionSelectors.join(',');
-        element.querySelectorAll(combinedSelector).forEach(el => el.remove());
-      }
-    });
-
-    // Gather the HTML from all included elements
-    let extractedContent = elementsToProcess.map(el => el.innerHTML).join('\n');
-    extractedContent = HtmlProcessor.removeImageTags(extractedContent);
-    extractedContent = HtmlProcessor.replaceAnchorTags(extractedContent);
-
-    // Convert to markdown
-    const markdown = convertHtmlToMarkdown(extractedContent);
-
-    // Process the markdown for better readability
-    return HtmlProcessor.processMarkdown(markdown);
-  }
-
-  extractSearchContent(html: string): string[] {
-    // Create a temporary DOM element to parse the HTML
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-
-    const elementsToProcessSet = new Set<HTMLElement>();
-    if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
-      const combinedSelector = this.inclusionSelectors.join(',');
-      tempDiv.querySelectorAll(combinedSelector).forEach(el => {
-        elementsToProcessSet.add(el as HTMLElement);
-      });
-    } else {
-      elementsToProcessSet.add(tempDiv);
-    }
-
-    const elementsToProcess = Array.from(elementsToProcessSet);
-
-    // For each included element, remove excluded elements inside it
-    elementsToProcess.forEach(element => {
-      this.debugHighlightExcludedElements(element);
-      this.debugHighlightIncludedElements(element);
-      if (this.exclusionSelectors.length > 0) {
-        const combinedSelector = this.exclusionSelectors.join(',');
-        element.querySelectorAll(combinedSelector).forEach(el => el.remove());
-      }
-    });
-
-    // Extract anchor tags that contain /in/ and return the list of extracted handles
-    const anchorHandles = new Set<string>();
-    const anchors = tempDiv.querySelectorAll('a[href*="/in/"]');
-    anchors.forEach(anchor => {
-      const href = anchor.getAttribute('href');
-      if (href && href.includes('miniProfileUrn')) {
-        const match = href.match(/\/in\/([^/?#]+)/i);
-        if (match && match[1] && !/^ACoA/i.test(match[1])) {
-          anchorHandles.add(match[1]);
-        }
-      }
-    });
-    return Array.from(anchorHandles);
   }
 
   static isConfigured(host: string): boolean {
