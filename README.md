@@ -7,7 +7,7 @@ A Chrome/Firefox extension that intelligently extracts web content and converts 
 - **Smart Content Extraction**: Domain-specific CSS selectors for 50+ websites (LinkedIn, Reddit, Twitter, YouTube, etc.)
 - **HTML to Markdown**: Clean conversion using semantic markdown processing
 - **Deduplication**: Tracks content hashes to avoid reprocessing unchanged pages
-- **Native Messaging**: Integrates with a Python backend (`com.hoarder.hoard`) for content storage
+- **Native Messaging**: Integrates with a TypeScript/Node.js backend for ChromaDB storage
 - **Cross-Browser**: Supports Chrome and Firefox
 - **Dark/Light Theme**: User-configurable UI theme
 
@@ -119,9 +119,24 @@ CEB_CI=              # Set for CI environments
 - **Testing**: Vitest
 - **Validation**: Zod
 
-## Native Messaging
+## Native Messaging Host
 
-The extension communicates with a native host (`com.hoarder.hoard`) using Chrome's native messaging API. Messages follow this structure:
+The extension communicates with a native host (`com.hoarder.hoard`) using Chrome's native messaging API. The host stores content in ChromaDB with semantic collection routing.
+
+### Setup
+
+```bash
+# Build and install the native host
+cd chrome-extension/host-ts
+pnpm install
+pnpm build
+pnpm install-host
+
+# (Optional) Start ChromaDB
+docker run -p 8000:8000 chromadb/chroma
+```
+
+### Message Format
 
 ```typescript
 {
@@ -131,6 +146,8 @@ The extension communicates with a native host (`com.hoarder.hoard`) using Chrome
   url: string       // Source URL
 }
 ```
+
+See [chrome-extension/host-ts/README.md](chrome-extension/host-ts/README.md) for more details.
 
 ## License
 
