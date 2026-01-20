@@ -1,7 +1,0 @@
-{
-  "name": "com.hoarder.hoard",
-  "description": "Hoarder hoarder",
-  "path": "/Users/junekim/Documents/hoarder-addon/chrome-extension/host/native-host.py",
-  "type": "stdio",
-  "allowed_origins": ["chrome-extension://mpjincdljlmienomifoankgheoeoaodj/"]
-}
