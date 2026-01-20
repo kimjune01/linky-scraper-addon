@@ -127,10 +127,11 @@ export class HtmlProcessor {
     return processed;
   }
 
+  private static readonly MAX_MARKDOWN_LENGTH = 30 * 1024; // 30KB
+
   static truncateToFit(markdown: string): string {
-    const maxLength = 30 * 1024;
-    if (markdown.length > maxLength) {
-      return markdown.slice(0, maxLength) + '...';
+    if (markdown.length > this.MAX_MARKDOWN_LENGTH) {
+      return markdown.slice(0, this.MAX_MARKDOWN_LENGTH) + '...';
     }
     return markdown;
   }

@@ -2,9 +2,10 @@ import { ConfigurableExtractor } from './ConfigurableExtractor';
 import type { NativeMessage } from './NativeMessage';
 import { NativeMessageType } from './NativeMessage';
 import { Deduplicator } from './deduplicator';
-// import { isContentLoading } from './isContentLoading';
 
-// Debounce utility (can be reused elsewhere)
+const DEBOUNCE_DELAY_MS = 2000; // Wait for DOM to settle before extracting
+
+// Debounce utility
 function debounce<T extends (...args: unknown[]) => void>(fn: T, delay: number): T {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   return function (this: unknown, ...args: unknown[]) {
@@ -39,7 +40,7 @@ const extractAndLog = () => {
 };
 
 // Debounced version to avoid excessive calls
-const debouncedExtractAndLog = debounce(extractAndLog, 2000);
+const debouncedExtractAndLog = debounce(extractAndLog, DEBOUNCE_DELAY_MS);
 
 // Set up a MutationObserver to watch for DOM changes
 const observer = new MutationObserver(() => {

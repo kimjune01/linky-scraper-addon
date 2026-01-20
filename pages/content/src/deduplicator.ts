@@ -1,6 +1,7 @@
 // Deduplicator class using localStorage to store a set of hashes (up to 1MB)
 const LOCALSTORAGE_KEY = 'deduplicator_hashes';
 const MAX_STORAGE_BYTES = 1024 * 1024; // 1MB
+const CLEANUP_PROBABILITY = 0.001; // Run cleanup ~1 in 1000 calls
 
 function hashContent(content: string): string {
   // Fast, low-accuracy hash: sum char codes of every 10th character
@@ -12,10 +13,13 @@ function hashContent(content: string): string {
 }
 
 export class Deduplicator {
-  private hashes: string[];
+  private hashes: Set<string>;
+  private hashOrder: string[]; // Track insertion order for cleanup
 
   constructor() {
-    this.hashes = this.loadHashes();
+    const loaded = this.loadHashes();
+    this.hashes = new Set(loaded);
+    this.hashOrder = loaded;
   }
 
   private loadHashes(): string[] {
@@ -29,32 +33,30 @@ export class Deduplicator {
   }
 
   private saveHashes() {
-    // Remove oldest hashes if storage exceeds 1MB
-    let serialized = JSON.stringify(this.hashes);
     // Probabilistically run cleanup (about 1 in 1000 calls)
-    if (Math.random() < 0.001) {
-      while (serialized.length > MAX_STORAGE_BYTES && this.hashes.length > 0) {
+    if (Math.random() < CLEANUP_PROBABILITY) {
+      let serialized = JSON.stringify(this.hashOrder);
+      while (serialized.length > MAX_STORAGE_BYTES && this.hashOrder.length > 0) {
         // Remove the oldest half at once
-        const half = Math.ceil(this.hashes.length / 2);
-        this.hashes = this.hashes.slice(half);
-        serialized = JSON.stringify(this.hashes);
+        const half = Math.ceil(this.hashOrder.length / 2);
+        const removed = this.hashOrder.splice(0, half);
+        removed.forEach(h => this.hashes.delete(h));
+        serialized = JSON.stringify(this.hashOrder);
       }
     }
-    localStorage.setItem(LOCALSTORAGE_KEY, serialized);
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(this.hashOrder));
   }
 
   isContentChanged(content: string): boolean {
     const contentHash = hashContent(content);
-    if (this.hashes.includes(contentHash)) {
-      return false;
-    }
-    return true;
+    return !this.hashes.has(contentHash);
   }
 
   updateWithContent(content: string): void {
     const contentHash = hashContent(content);
-    if (!this.hashes.includes(contentHash)) {
-      this.hashes.push(contentHash);
+    if (!this.hashes.has(contentHash)) {
+      this.hashes.add(contentHash);
+      this.hashOrder.push(contentHash);
       this.saveHashes();
     }
   }

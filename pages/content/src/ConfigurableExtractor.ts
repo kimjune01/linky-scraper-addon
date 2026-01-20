@@ -16,7 +16,6 @@ export class ConfigurableExtractor {
   private inclusionSelectors: string[] | null;
   private domain: string;
   private debugMode: boolean;
-  private exclusionTextLiterals: string[] = ['download', 'search'];
 
   /**
    * Creates a new ConfigurableContentExtractor
@@ -95,11 +94,11 @@ export class ConfigurableExtractor {
     const elementsToProcessSet = new Set<HTMLElement>();
     if (this.inclusionSelectors && this.inclusionSelectors.length > 0) {
       const combinedSelector = this.inclusionSelectors.join(',');
-      console.time('querySelectorAll inclusionSelectors');
+      if (this.debugMode) console.time('querySelectorAll inclusionSelectors');
       tempDiv.querySelectorAll(combinedSelector).forEach(el => {
         elementsToProcessSet.add(el as HTMLElement);
       });
-      console.timeEnd('querySelectorAll inclusionSelectors');
+      if (this.debugMode) console.timeEnd('querySelectorAll inclusionSelectors');
     } else {
       elementsToProcessSet.add(tempDiv);
     }
