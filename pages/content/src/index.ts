@@ -1,7 +1,6 @@
 import { ConfigurableExtractor } from './ConfigurableExtractor';
-import type { NativeMessage } from './NativeMessage';
-import { NativeMessageType } from './NativeMessage';
 import { Deduplicator } from './deduplicator';
+import { saveContent, determineCollectionName } from '@extension/storage';
 
 const DEBOUNCE_DELAY_MS = 2000; // Wait for DOM to settle before extracting
 
@@ -18,33 +17,39 @@ const domain = window.location.hostname;
 const extractor = new ConfigurableExtractor(domain);
 const deduplicator = new Deduplicator();
 
-// Extraction logic
-const extractAndLog = () => {
-  if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) return;
+// Extraction logic - saves directly to IndexedDB
+const extractAndSave = async () => {
   const content = extractor.extractContent(document.body.innerHTML);
   if (!deduplicator.isContentChanged(content)) {
-    console.log('Content unchanged, skipping');
+    console.log('[Linky] Content unchanged, skipping');
     return;
-  } else {
-    console.log('Content changed, extracting');
   }
+  console.log('[Linky] Content changed, saving');
   deduplicator.updateWithContent(content);
 
-  const message: NativeMessage = {
-    action: 'sendNativeMarkdown',
-    type: NativeMessageType.Content,
-    content,
-    url: window.location.href,
-  };
-  chrome.runtime.sendMessage(message);
+  const url = window.location.href;
+  const collection = determineCollectionName(url);
+
+  try {
+    const result = await saveContent(url, content, collection);
+    if (result.saved) {
+      console.log(`[Linky] Saved to collection: ${result.collection}`);
+    } else {
+      console.error('[Linky] Failed to save:', result.error);
+    }
+  } catch (error) {
+    console.error('[Linky] Error saving content:', error);
+  }
 };
 
 // Debounced version to avoid excessive calls
-const debouncedExtractAndLog = debounce(extractAndLog, DEBOUNCE_DELAY_MS);
+const debouncedExtractAndSave = debounce(() => {
+  extractAndSave().catch(console.error);
+}, DEBOUNCE_DELAY_MS);
 
 // Set up a MutationObserver to watch for DOM changes
 const observer = new MutationObserver(() => {
-  debouncedExtractAndLog();
+  debouncedExtractAndSave();
 });
 observer.observe(document.body, {
   childList: true,

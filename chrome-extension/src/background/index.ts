@@ -1,5 +1,5 @@
 import 'webextension-polyfill';
-import { exampleThemeStorage } from '@extension/storage';
+import { exampleThemeStorage, getStorageStats } from '@extension/storage';
 
 exampleThemeStorage.get().then(theme => {
   console.log('theme', theme);
@@ -7,6 +7,13 @@ exampleThemeStorage.get().then(theme => {
 
 console.log('Background loaded');
 console.log("Edit 'chrome-extension/src/background/index.ts' and save to reload.");
+
+// Log storage stats on startup
+getStorageStats()
+  .then(stats => {
+    console.log('[Linky] Storage stats:', stats);
+  })
+  .catch(console.error);
 
 chrome.runtime.onMessage.addListener(message => {
   if (message.action === 'saveToDownloads') {
@@ -18,18 +25,12 @@ chrome.runtime.onMessage.addListener(message => {
       conflictAction: 'uniquify',
     });
   }
-  if (message.action === 'sendNativeMarkdown') {
-    console.log('Sending native message');
-    chrome.runtime.sendNativeMessage(
-      'com.hoarder.hoard', // Native messaging host name
-      message,
-      response => {
-        if (chrome.runtime.lastError) {
-          console.error('Native message error:', chrome.runtime.lastError.message);
-        } else {
-          console.log('Native message response:', response);
-        }
-      },
-    );
+  if (message.action === 'getStorageStats') {
+    // Handle storage stats request from popup/options page
+    getStorageStats()
+      .then(stats => {
+        chrome.runtime.sendMessage({ action: 'storageStats', stats });
+      })
+      .catch(console.error);
   }
 });
