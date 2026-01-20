@@ -1,13 +1,14 @@
-# Hoarder - Web Content Scraper Extension
+# Linky - Web Content Scraper Extension
 
-A Chrome/Firefox extension that intelligently extracts web content and converts it to clean markdown format. Designed to work with a native messaging backend for content archival.
+A Chrome/Firefox extension that intelligently extracts web content and converts it to clean markdown format. All data is stored locally in IndexedDB with automatic LRU eviction.
 
 ## Features
 
 - **Smart Content Extraction**: Domain-specific CSS selectors for 50+ websites (LinkedIn, Reddit, Twitter, YouTube, etc.)
 - **HTML to Markdown**: Clean conversion using semantic markdown processing
 - **Deduplication**: Tracks content hashes to avoid reprocessing unchanged pages
-- **Native Messaging**: Integrates with a TypeScript/Node.js backend for ChromaDB storage
+- **Local Storage**: Content stored in IndexedDB with automatic eviction (no external dependencies)
+- **URL Categorization**: Automatic collection assignment based on URL patterns (70+ rules)
 - **Cross-Browser**: Supports Chrome and Firefox
 - **Dark/Light Theme**: User-configurable UI theme
 
@@ -56,8 +57,8 @@ pnpm zip:firefox
 │   ├── side-panel/       # Sidebar panel
 │   ├── options/          # Settings page
 │   └── content-ui/       # Injected UI components
-└── packages/             # Shared libraries
-    ├── storage/          # Chrome storage API wrapper
+└── packages/
+    ├── storage/          # IndexedDB storage with LRU eviction
     ├── ui/               # UI components
     ├── i18n/             # Internationalization (en, ko)
     └── shared/           # Common utilities
@@ -69,7 +70,32 @@ pnpm zip:firefox
 2. **ConfigurableExtractor** applies domain-specific selectors to extract relevant content
 3. **HtmlProcessor** cleans HTML and converts to markdown (max 30KB)
 4. **Deduplicator** checks if content has changed since last extraction
-5. Content is sent via **native messaging** to the backend or saved to downloads
+5. **Collection Name** determines category from URL (e.g., `github_repositories`, `linkedin_profiles`)
+6. Content is saved to **IndexedDB** with automatic LRU eviction
+
+### Data Flow
+
+```
+Page loads → DOM mutation detected → 2s debounce
+    ↓
+Content extracted (domain-specific selectors)
+    ↓
+Converted to markdown
+    ↓
+Deduplicated (hash comparison)
+    ↓
+URL categorized → Collection assigned
+    ↓
+Saved to IndexedDB
+    ↓
+(If storage full) → LRU eviction (oldest 10% removed)
+```
+
+### Storage Limits
+
+- **Max entries**: 10,000
+- **Max size**: 100MB
+- **Eviction**: Least-recently-accessed entries removed first
 
 ## Configuration
 
@@ -105,49 +131,61 @@ CEB_CI=              # Set for CI environments
 | `pnpm build:firefox` | Production build for Firefox |
 | `pnpm zip` | Build and package Chrome extension |
 | `pnpm zip:firefox` | Build and package Firefox extension |
+| `pnpm test` | Run unit tests |
 | `pnpm type-check` | Run TypeScript type checking |
 | `pnpm lint` | Run ESLint |
 | `pnpm lint:fix` | Fix linting issues |
 | `pnpm e2e` | Run end-to-end tests |
 | `pnpm clean` | Clean build artifacts |
 
+## Storage API
+
+The extension exposes these functions for querying stored content:
+
+```typescript
+import {
+  saveContent,
+  getContentByUrl,
+  getContentByCollection,
+  getStorageStats,
+  clearAllContent,
+  deleteContentByUrl
+} from '@extension/storage';
+
+// Get all saved versions of a URL
+const entries = await getContentByUrl('https://github.com/user/repo');
+
+// Get all content in a collection
+const githubRepos = await getContentByCollection('github_repositories');
+
+// Get storage statistics
+const stats = await getStorageStats();
+// { totalEntries: 1234, totalSizeMB: 45.6, collections: { ... } }
+```
+
+### URL Collections
+
+URLs are automatically categorized into collections:
+
+| URL Pattern | Collection |
+|-------------|------------|
+| `github.com/user/repo` | `github_repositories` |
+| `github.com/user/repo/pull/123` | `github_pull_requests` |
+| `linkedin.com/in/name` | `linkedin_profiles` |
+| `stackoverflow.com/questions/...` | `stackoverflow_questions` |
+| `reddit.com/r/subreddit` | `reddit_subreddit` |
+| `*.com/docs/*` | `*_documentation` |
+| (default) | `domain_pages` |
+
+See `packages/storage/lib/impl/collectionName.ts` for the full list of 70+ patterns.
+
 ## Tech Stack
 
 - **Framework**: React 19, TypeScript 5.8
 - **Build**: Vite 6.1, Turbo
 - **Styling**: Tailwind CSS 3.4
-- **Testing**: Vitest
+- **Testing**: Vitest, fake-indexeddb
 - **Validation**: Zod
-
-## Native Messaging Host
-
-The extension communicates with a native host (`com.hoarder.hoard`) using Chrome's native messaging API. The host stores content in ChromaDB with semantic collection routing.
-
-### Setup
-
-```bash
-# Build and install the native host
-cd chrome-extension/host-ts
-pnpm install
-pnpm build
-pnpm install-host
-
-# (Optional) Start ChromaDB
-docker run -p 8000:8000 chromadb/chroma
-```
-
-### Message Format
-
-```typescript
-{
-  action: 'sendNativeMarkdown',
-  type: 'Content' | 'Profile' | 'Search',
-  content: string,  // Markdown content
-  url: string       // Source URL
-}
-```
-
-See [chrome-extension/host-ts/README.md](chrome-extension/host-ts/README.md) for more details.
 
 ## License
 
